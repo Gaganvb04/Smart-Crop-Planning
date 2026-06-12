@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Smart Crop Planning</title>
+    <link rel="stylesheet" href="/css/theme.css">
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/mobile.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="/" class="navbar-brand">
+            <span class="logo-icon">🌾</span>
+            <span data-i18n="app_name">Smart Crop Planning</span>
+        </a>
+        <div class="navbar-links">
+            <a href="/" data-i18n="login">🔑 Login</a>
+            <button onclick="speak(getTranslation('register_help_voice'))" title="Voice Help">🔊</button>
+        </div>
+    </nav>
+
+    <div class="container" style="max-width: 560px; margin-top: 1.5rem;">
+        <div class="page-header">
+            <h1 data-i18n="register_title">📝 Farmer Registration</h1>
+            <p data-i18n="register_subtitle">Create your account to start planning</p>
+        </div>
+
+        <div class="card">
+            <div id="register-alert"></div>
+
+            <div class="form-group">
+                <label data-i18n="farmer_name">👤 Farmer Name</label>
+                <div class="input-with-voice">
+                    <input type="text" id="reg-name" class="form-control" placeholder="Enter your full name">
+                    <button type="button" class="btn btn-icon btn-voice" onclick="voiceInput('reg-name')">🎤</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label data-i18n="mobile_number">📱 Mobile Number</label>
+                <div class="input-with-voice">
+                    <input type="tel" id="reg-mobile" class="form-control" placeholder="9876543210" maxlength="10">
+                    <button type="button" class="btn btn-icon btn-voice" onclick="voiceInput('reg-mobile')">🎤</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label data-i18n="password">🔒 Password</label>
+                <input type="password" id="reg-password" class="form-control"
+                    placeholder="Create a password (min 4 chars)">
+            </div>
+
+            <div class="form-group">
+                <label data-i18n="preferred_language">🌐 Preferred Language</label>
+                <select id="reg-language" class="form-control">
+                    <option value="en">English</option>
+                    <option value="hi">हिन्दी (Hindi)</option>
+                    <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label data-i18n="total_land">🌍 Total Land (Acres)</label>
+                <div class="input-with-voice">
+                    <input type="number" id="reg-land" class="form-control" placeholder="e.g. 5.5" step="0.1" min="0">
+                    <button type="button" class="btn btn-icon btn-voice" onclick="voiceInput('reg-land')">🎤</button>
+                </div>
+            </div>
+
+            <button class="btn btn-primary btn-lg" style="width:100%" onclick="handleRegister()" data-i18n="register">
+                Register ✅
+            </button>
+
+            <p class="text-center mt-2">
+                <span data-i18n="have_account">Already have an account?</span>
+                <a href="/" style="color: var(--primary); font-weight: 600;" data-i18n="login_here">Login here</a>
+            </p>
+        </div>
+    </div>
+
+    <script src="/js/i18n.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/voice.js"></script>
+
+    <script>
+        // Set saved language
+        const savedLang = localStorage.getItem('language');
+        if (savedLang) {
+            document.getElementById('reg-language').value = savedLang;
+            setLanguage(savedLang);
+        }
+
+        async function handleRegister() {
+            const alertDiv = document.getElementById('register-alert');
+            const data = {
+                name: document.getElementById('reg-name').value.trim(),
+                mobile: document.getElementById('reg-mobile').value.trim(),
+                password: document.getElementById('reg-password').value,
+                preferred_language: document.getElementById('reg-language').value,
+                total_land_acres: parseFloat(document.getElementById('reg-land').value) || 0
+            };
+
+            if (!data.name || !data.mobile || !data.password) {
+                alertDiv.innerHTML = '<div class="alert alert-error">⚠️ Please fill all required fields</div>';
+                return;
+            }
+
+            try {
+                const res = await api.post('/api/register', data);
+                if (res.success) {
+                    localStorage.setItem('farmer', JSON.stringify(res.farmer));
+                    localStorage.setItem('language', data.preferred_language);
+                    alertDiv.innerHTML = '<div class="alert alert-success">✅ Registration successful! Redirecting...</div>';
+                    setTimeout(() => {
+                        window.location.href = '/pages/dashboard.html';
+                    }, 1000);
+                } else {
+                    alertDiv.innerHTML = `<div class="alert alert-error">❌ ${res.errors.join(', ')}</div>`;
+                }
+            } catch (e) {
+                alertDiv.innerHTML = '<div class="alert alert-error">❌ Registration failed. Try again.</div>';
+            }
+        }
+    </script>
+</body>
+
+</html>

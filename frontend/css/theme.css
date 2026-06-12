@@ -1,0 +1,75 @@
+/* ==========================================
+   Smart Crop Planning - Theme
+   Green-Earth Color Palette
+   ========================================== */
+
+:root {
+    /* Primary Colors - Earth & Growth */
+    --primary: #2E7D32;
+    --primary-light: #4CAF50;
+    --primary-dark: #1B5E20;
+    --primary-bg: #E8F5E9;
+
+    /* Secondary Colors */
+    --secondary: #FF8F00;
+    --secondary-light: #FFB300;
+    --secondary-dark: #E65100;
+
+    /* Accent */
+    --accent: #00796B;
+    --accent-light: #26A69A;
+
+    /* Neutrals */
+    --bg: #F5F7F5;
+    --bg-card: #FFFFFF;
+    --bg-dark: #1A2E1A;
+    --text: #212121;
+    --text-light: #757575;
+    --text-white: #FFFFFF;
+    --border: #E0E0E0;
+    --shadow: rgba(0, 0, 0, 0.1);
+
+    /* Traffic Light - Market Trend */
+    --red: #E53935;
+    --red-bg: #FFEBEE;
+    --yellow: #FB8C00;
+    --yellow-bg: #FFF8E1;
+    --green: #43A047;
+    --green-bg: #E8F5E9;
+
+    /* Sizes */
+    --radius: 12px;
+    --radius-sm: 8px;
+    --radius-lg: 20px;
+    --radius-full: 50%;
+
+    /* Shadows */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+    --shadow-glow: 0 0 20px rgba(46, 125, 50, 0.3);
+
+    /* Transitions */
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: all 0.15s ease;
+
+    /* Fonts */
+    --font-main: 'Outfit', 'Segoe UI', system-ui, sans-serif;
+    --font-heading: 'Outfit', 'Segoe UI', system-ui, sans-serif;
+}
+
+/* Season Colors */
+.season-kharif {
+    --season-color: #2E7D32;
+    --season-bg: #E8F5E9;
+}
+
+.season-rabi {
+    --season-color: #1565C0;
+    --season-bg: #E3F2FD;
+}
+
+.season-zaid {
+    --season-color: #E65100;
+    --season-bg: #FFF3E0;
+}

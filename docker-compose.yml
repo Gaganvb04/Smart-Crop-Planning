@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: smart_crop_db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: smart_crop_planning
+      MYSQL_USER: crop_user
+      MYSQL_PASSWORD: crop_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  web:
+    build: .
+    container_name: smart_crop_web
+    ports:
+      - "5000:5000"
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_PORT=3306
+      - MYSQL_USER=crop_user
+      - MYSQL_PASSWORD=crop_password
+      - MYSQL_DB=smart_crop_planning
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  mysql_data:

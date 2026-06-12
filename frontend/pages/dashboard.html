@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Smart Crop Planning</title>
+    <link rel="stylesheet" href="/css/theme.css">
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/mobile.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="/pages/dashboard.html" class="navbar-brand">
+            <span class="logo-icon">🌾</span>
+            <span data-i18n="app_name">Smart Crop Planning</span>
+        </a>
+        <div class="navbar-links">
+            <a href="/pages/dashboard.html" class="active" data-i18n="dashboard">🏠 Dashboard</a>
+            <a href="/pages/land.html" data-i18n="land">📍 Land</a>
+            <a href="/pages/crop-search.html" data-i18n="crops">🌱 Crops</a>
+            <a href="/pages/analytics.html" data-i18n="analytics">📊 Analytics</a>
+            <button onclick="handleLogout()" data-i18n="logout">🚪 Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1 id="welcome-msg" data-i18n="welcome">🙏 Welcome, Farmer!</h1>
+            <p data-i18n="dashboard_subtitle">Your farming overview at a glance</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-4" id="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">🌍</div>
+                <div class="stat-value" id="stat-lands">0</div>
+                <div class="stat-label" data-i18n="total_lands">Total Lands</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📐</div>
+                <div class="stat-value" id="stat-acres">0</div>
+                <div class="stat-label" data-i18n="total_acres">Total Acres</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🌾</div>
+                <div class="stat-value" id="stat-mapped">0</div>
+                <div class="stat-label" data-i18n="crops_mapped">Crops Mapped</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⚠️</div>
+                <div class="stat-value" id="stat-unmapped">0</div>
+                <div class="stat-label" data-i18n="unmapped">Unmapped Lands</div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h2>⚡ Quick Actions</h2>
+            </div>
+            <div class="grid grid-3 card-body">
+                <a href="/pages/land.html" class="btn btn-primary btn-lg">
+                    📍 Add Land
+                </a>
+                <a href="/pages/crop-search.html" class="btn btn-secondary btn-lg">
+                    🔍 Search Crops
+                </a>
+                <a href="/pages/analytics.html" class="btn btn-outline btn-lg">
+                    📊 View Analytics
+                </a>
+            </div>
+        </div>
+
+        <!-- My Lands -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h2>📍 My Lands</h2>
+                <a href="/pages/land.html" class="btn btn-sm btn-primary">+ Add Land</a>
+            </div>
+            <div id="lands-list" class="card-body">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading lands...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/i18n.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/voice.js"></script>
+    <script src="/js/auth.js"></script>
+
+    <script>
+        // Load dashboard data
+        document.addEventListener('DOMContentLoaded', async () => {
+            const farmer = JSON.parse(localStorage.getItem('farmer') || '{}');
+            if (farmer.name) {
+                document.getElementById('welcome-msg').textContent = `🙏 Welcome, ${farmer.name}!`;
+            }
+
+            const lang = localStorage.getItem('language') || 'en';
+            setLanguage(lang);
+
+            await loadDashboard();
+        });
+
+        async function loadDashboard() {
+            try {
+                // Load farmer analytics
+                const analytics = await api.get('/api/analytics/farmer');
+                if (analytics.success) {
+                    const a = analytics.analytics;
+                    document.getElementById('stat-lands').textContent = a.total_lands;
+                    document.getElementById('stat-acres').textContent = a.total_land_acres.toFixed(1);
+                    document.getElementById('stat-mapped').textContent = a.mapped_lands;
+                    document.getElementById('stat-unmapped').textContent = a.unmapped_lands;
+                }
+            } catch (e) {
+                console.error('Failed to load analytics:', e);
+            }
+
+            try {
+                // Load lands
+                const landsRes = await api.get('/api/lands');
+                const container = document.getElementById('lands-list');
+
+                if (landsRes.success && landsRes.lands.length > 0) {
+                    container.innerHTML = landsRes.lands.map(land => `
+                        <div class="land-card mb-1">
+                            <div class="flex-between">
+                                <div>
+                                    <span class="land-uid">${land.land_uid}</span>
+                                    <h3 class="mt-1">${land.village}, ${land.district}</h3>
+                                    <p style="color: var(--text-light)">${land.state} • ${land.area_acres} acres</p>
+                                </div>
+                                <div style="text-align: right;">
+                                    ${land.crop_mappings && land.crop_mappings.length > 0
+                            ? land.crop_mappings.map(cm => `
+                                            <span class="badge badge-${cm.season.toLowerCase()}">${cm.crop_icon} ${cm.crop_name} (${cm.season})</span>
+                                        `).join('')
+                            : '<span class="badge" style="background:#FFF3E0;color:#E65100;">⚠️ No crop mapped</span>'
+                        }
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="icon">📍</div>
+                            <h3>No lands registered yet</h3>
+                            <p>Add your first land to get started</p>
+                            <a href="/pages/land.html" class="btn btn-primary mt-2">+ Add Land</a>
+                        </div>
+                    `;
+                }
+            } catch (e) {
+                document.getElementById('lands-list').innerHTML = '<p class="text-center">Failed to load lands</p>';
+            }
+        }
+    </script>
+</body>
+
+</html>

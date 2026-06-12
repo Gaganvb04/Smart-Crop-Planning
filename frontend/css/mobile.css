@@ -1,0 +1,158 @@
+/* ==========================================
+   Smart Crop Planning - Mobile Responsive
+   ========================================== */
+
+/* Tablet */
+@media (max-width: 768px) {
+    .navbar {
+        flex-direction: column;
+        gap: 10px;
+        padding: 0.8rem 1rem;
+    }
+
+    .navbar-links {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .navbar-links a,
+    .navbar-links button {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+    }
+
+    .container {
+        padding: 1rem;
+    }
+
+    .page-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .grid-2,
+    .grid-3,
+    .grid-4 {
+        grid-template-columns: 1fr;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .map-container {
+        height: 300px;
+    }
+
+    .chart-container canvas {
+        max-height: 250px;
+    }
+
+    .stat-card {
+        padding: 1rem;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+    }
+
+    .stat-icon {
+        font-size: 2rem;
+    }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+    body {
+        font-size: 14px;
+    }
+
+    .navbar-brand {
+        font-size: 1.1rem;
+    }
+
+    .navbar-links a,
+    .navbar-links button {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+    }
+
+    .container {
+        padding: 0.75rem;
+    }
+
+    .page-header h1 {
+        font-size: 1.3rem;
+    }
+
+    .card {
+        padding: 1rem;
+    }
+
+    .btn {
+        padding: 10px 18px;
+        font-size: 0.9rem;
+    }
+
+    .btn-lg {
+        padding: 12px 24px;
+        font-size: 1rem;
+    }
+
+    .form-control {
+        padding: 10px 14px;
+    }
+
+    .language-selector {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .lang-btn {
+        width: 100%;
+        max-width: 280px;
+    }
+
+    .crop-card {
+        padding: 1rem;
+    }
+
+    .crop-icon {
+        font-size: 2rem;
+        width: 48px;
+        height: 48px;
+    }
+
+    .traffic-light {
+        flex-direction: row;
+        padding: 1rem;
+    }
+
+    .traffic-dot {
+        width: 40px;
+        height: 40px;
+    }
+
+    .map-container {
+        height: 250px;
+    }
+}
+
+/* Large Mobile - Farmer-friendly touch targets */
+@media (max-width: 768px) {
+    .btn {
+        min-height: 48px;
+        min-width: 48px;
+    }
+
+    .form-control {
+        min-height: 48px;
+        font-size: 16px;
+        /* Prevents iOS zoom on focus */
+    }
+
+    .btn-icon {
+        width: 52px;
+        height: 52px;
+        font-size: 1.4rem;
+    }
+}

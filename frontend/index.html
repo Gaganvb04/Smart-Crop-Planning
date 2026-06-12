@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Crop Planning</title>
+    <meta name="description" content="Smart Crop Planning - Helping farmers make data-driven crop decisions">
+    <link rel="stylesheet" href="/css/theme.css">
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/mobile.css">
+</head>
+
+<body>
+    <!-- Hero Section -->
+    <div id="hero-section" class="hero">
+        <div class="hero-content">
+            <div class="hero-icon">🌾</div>
+            <h1>Smart Crop Planning</h1>
+            <p>Data-driven crop decisions for Indian farmers</p>
+
+            <!-- Language Selection -->
+            <div class="card mt-3" style="max-width: 500px; margin-left: auto; margin-right: auto;">
+                <h2 class="text-center mb-2">🌐 Select Language / भाषा चुनें</h2>
+                <div class="language-selector" id="language-selector">
+                    <button class="lang-btn active" data-lang="en" onclick="selectLanguage('en')">
+                        🇬🇧 English
+                    </button>
+                    <button class="lang-btn" data-lang="hi" onclick="selectLanguage('hi')">
+                        🇮🇳 हिन्दी
+                    </button>
+                    <button class="lang-btn" data-lang="kn" onclick="selectLanguage('kn')">
+                        🇮🇳 ಕನ್ನಡ
+                    </button>
+                </div>
+                <div class="text-center mt-2">
+                    <button class="btn btn-primary btn-lg" onclick="showAuth()" id="btn-continue" data-i18n="continue">
+                        Continue →
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auth Section (hidden initially) -->
+    <div id="auth-section" class="hidden">
+        <nav class="navbar">
+            <a href="/" class="navbar-brand">
+                <span class="logo-icon">🌾</span>
+                <span data-i18n="app_name">Smart Crop Planning</span>
+            </a>
+            <div class="navbar-links">
+                <button onclick="speak(getTranslation('welcome_voice'))" title="Voice Help">🔊</button>
+            </div>
+        </nav>
+
+        <div class="container" style="max-width: 480px; margin-top: 2rem;">
+            <div class="card">
+                <div class="auth-toggle">
+                    <button class="active" id="tab-login" onclick="showLogin()" data-i18n="login">Login</button>
+                    <button id="tab-register" onclick="showRegister()" data-i18n="register">Register</button>
+                </div>
+
+                <!-- Login Form -->
+                <div id="login-form">
+                    <div id="login-alert"></div>
+                    <div class="form-group">
+                        <label data-i18n="mobile_number">📱 Mobile Number</label>
+                        <div class="input-with-voice">
+                            <input type="tel" id="login-mobile" class="form-control" placeholder="9876543210"
+                                maxlength="10">
+                            <button type="button" class="btn btn-icon btn-voice" onclick="voiceInput('login-mobile')"
+                                title="Voice Input">🎤</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="password">🔒 Password</label>
+                        <input type="password" id="login-password" class="form-control" placeholder="Enter password">
+                    </div>
+                    <button class="btn btn-primary btn-lg" style="width:100%" onclick="handleLogin()" data-i18n="login">
+                        Login
+                    </button>
+                </div>
+
+                <!-- Register Link -->
+                <div id="register-link" class="text-center mt-2">
+                    <p><span data-i18n="no_account">No account?</span>
+                        <a href="/pages/register.html" style="color: var(--primary); font-weight: 600;"
+                            data-i18n="register_here">Register here</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/i18n.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/voice.js"></script>
+    <script src="/js/auth.js"></script>
+
+    <style>
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 40%, #43A047 100%);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .hero-icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+
+        .hero h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 1rem;
+        }
+    </style>
+
+    <script>
+        // Check if already logged in
+        (async function () {
+            try {
+                const res = await api.get('/api/me');
+                if (res.success) {
+                    window.location.href = '/pages/dashboard.html';
+                }
+            } catch (e) { }
+        })();
+
+        function selectLanguage(lang) {
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`[data-lang="${lang}"]`).classList.add('active');
+            setLanguage(lang);
+            localStorage.setItem('language', lang);
+        }
+
+        function showAuth() {
+            document.getElementById('hero-section').classList.add('hidden');
+            document.getElementById('auth-section').classList.remove('hidden');
+        }
+
+        function showLogin() {
+            document.getElementById('tab-login').classList.add('active');
+            document.getElementById('tab-register').classList.remove('active');
+            document.getElementById('login-form').classList.remove('hidden');
+            document.getElementById('register-link').classList.remove('hidden');
+        }
+
+        function showRegister() {
+            window.location.href = '/pages/register.html';
+        }
+
+        async function handleLogin() {
+            const mobile = document.getElementById('login-mobile').value;
+            const password = document.getElementById('login-password').value;
+            const alertDiv = document.getElementById('login-alert');
+
+            if (!mobile || !password) {
+                alertDiv.innerHTML = '<div class="alert alert-error">⚠️ Please fill all fields</div>';
+                return;
+            }
+
+            try {
+                const res = await api.post('/api/login', { mobile, password });
+                if (res.success) {
+                    localStorage.setItem('farmer', JSON.stringify(res.farmer));
+                    window.location.href = '/pages/dashboard.html';
+                } else {
+                    alertDiv.innerHTML = `<div class="alert alert-error">❌ ${res.error}</div>`;
+                }
+            } catch (e) {
+                alertDiv.innerHTML = '<div class="alert alert-error">❌ Login failed. Try again.</div>';
+            }
+        }
+    </script>
+</body>
+
+</html>

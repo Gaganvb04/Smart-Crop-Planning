@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crop Search - Smart Crop Planning</title>
+    <link rel="stylesheet" href="/css/theme.css">
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/mobile.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="/pages/dashboard.html" class="navbar-brand">
+            <span class="logo-icon">🌾</span>
+            <span data-i18n="app_name">Smart Crop Planning</span>
+        </a>
+        <div class="navbar-links">
+            <a href="/pages/dashboard.html" data-i18n="dashboard">🏠 Dashboard</a>
+            <a href="/pages/land.html" data-i18n="land">📍 Land</a>
+            <a href="/pages/crop-search.html" class="active" data-i18n="crops">🌱 Crops</a>
+            <a href="/pages/analytics.html" data-i18n="analytics">📊 Analytics</a>
+            <button onclick="handleLogout()" data-i18n="logout">🚪 Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>🔍 Crop Research</h1>
+            <p data-i18n="crop_search_subtitle">Search crops by text or voice to see market trends</p>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="card">
+            <div class="input-with-voice" style="max-width: 600px; margin: 0 auto;">
+                <input type="text" id="search-input" class="form-control"
+                    placeholder="🔍 Search crop name (e.g. Rice, Wheat...)" oninput="searchCrops()"
+                    style="font-size: 1.1rem; padding: 16px;">
+                <button class="btn btn-icon btn-voice btn-lg" onclick="voiceSearch()" id="voice-btn"
+                    title="Voice Search">🎤</button>
+                <button class="btn btn-icon btn-primary btn-lg" onclick="speakResults()"
+                    title="Listen to results">🔊</button>
+            </div>
+        </div>
+
+        <!-- Season Filter -->
+        <div class="flex-center gap-1 mt-2">
+            <button class="btn btn-outline btn-sm season-filter active" data-season="" onclick="filterSeason('')">All
+                Seasons</button>
+            <button class="btn btn-outline btn-sm season-filter" data-season="Kharif"
+                onclick="filterSeason('Kharif')">🌧️ Kharif</button>
+            <button class="btn btn-outline btn-sm season-filter" data-season="Rabi" onclick="filterSeason('Rabi')">❄️
+                Rabi</button>
+            <button class="btn btn-outline btn-sm season-filter" data-season="Zaid" onclick="filterSeason('Zaid')">☀️
+                Zaid</button>
+        </div>
+
+        <!-- Results -->
+        <div class="grid grid-3 mt-2" id="crop-results">
+            <!-- crops loaded here -->
+        </div>
+
+        <!-- Crop Detail Modal -->
+        <div id="crop-detail" class="hidden mt-3">
+            <div class="card" style="border: 2px solid var(--primary);">
+                <div class="card-header">
+                    <h2 id="detail-crop-name">Loading...</h2>
+                    <button class="btn btn-sm btn-outline" onclick="closeCropDetail()">✕ Close</button>
+                </div>
+                <div class="grid grid-3" id="detail-stats">
+                </div>
+                <div class="grid grid-2 mt-2">
+                    <div class="chart-container">
+                        <h3 class="text-center mb-1">📊 District-wise Acres</h3>
+                        <canvas id="district-chart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3 class="text-center mb-1">🥧 Season Distribution</h3>
+                        <canvas id="season-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="/js/i18n.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/voice.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/charts.js"></script>
+
+    <script>
+        let allCrops = [];
+        let currentSeason = '';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const lang = localStorage.getItem('language') || 'en';
+            setLanguage(lang);
+            loadAllCrops();
+        });
+
+        async function loadAllCrops() {
+            try {
+                const res = await api.get('/api/crops');
+                if (res.success) {
+                    allCrops = res.crops;
+                    renderCrops(allCrops);
+                }
+            } catch (e) {
+                console.error('Load crops error:', e);
+            }
+        }
+
+        function renderCrops(crops) {
+            const container = document.getElementById('crop-results');
+            if (crops.length === 0) {
+                container.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="icon">🔍</div><h3>No crops found</h3><p>Try a different search</p></div>';
+                return;
+            }
+            container.innerHTML = crops.map(c => `
+                <div class="crop-card" onclick="showCropDetail(${c.id})">
+                    <div class="crop-icon">${c.icon}</div>
+                    <div class="crop-info">
+                        <h3>${c.name}</h3>
+                        <p><span class="badge badge-${c.season.toLowerCase()}">${c.season}</span></p>
+                        <p style="font-size:0.8rem;color:var(--text-light)">${c.sowing_period || ''}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function searchCrops() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            let filtered = allCrops.filter(c => c.name.toLowerCase().includes(query));
+            if (currentSeason) {
+                filtered = filtered.filter(c => c.season === currentSeason);
+            }
+            renderCrops(filtered);
+        }
+
+        function filterSeason(season) {
+            currentSeason = season;
+            document.querySelectorAll('.season-filter').forEach(b => b.classList.remove('active'));
+            document.querySelector(`[data-season="${season}"]`).classList.add('active');
+            searchCrops();
+        }
+
+        function voiceSearch() {
+            voiceInput('search-input', () => {
+                searchCrops();
+            });
+        }
+
+        async function showCropDetail(cropId) {
+            const detailDiv = document.getElementById('crop-detail');
+            detailDiv.classList.remove('hidden');
+            detailDiv.scrollIntoView({ behavior: 'smooth' });
+
+            try {
+                const res = await api.get(`/api/analytics/crop/${cropId}`);
+                if (res.success) {
+                    const a = res.analytics;
+                    document.getElementById('detail-crop-name').textContent = `${a.crop.icon} ${a.crop.name}`;
+
+                    const trend = a.market_trend;
+                    document.getElementById('detail-stats').innerHTML = `
+                        <div class="stat-card">
+                            <div class="stat-icon">📐</div>
+                            <div class="stat-value">${a.total_acres.toFixed(1)}</div>
+                            <div class="stat-label">Total Acres</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🏘️</div>
+                            <div class="stat-value">${Object.keys(a.district_breakdown).length}</div>
+                            <div class="stat-label">Districts</div>
+                        </div>
+                        <div class="stat-card" style="background: ${trend.color === 'red' ? 'var(--red-bg)' : trend.color === 'yellow' ? 'var(--yellow-bg)' : 'var(--green-bg)'}">
+                            <div class="stat-icon">${trend.icon}</div>
+                            <div class="stat-value" style="font-size:1rem">${trend.label}</div>
+                            <div class="stat-label">${trend.advice}</div>
+                        </div>
+                    `;
+
+                    // Render Charts
+                    renderDistrictChart(a.district_breakdown);
+                    renderSeasonChart(a.season_breakdown);
+                }
+            } catch (e) {
+                console.error('Crop detail error:', e);
+            }
+        }
+
+        function closeCropDetail() {
+            document.getElementById('crop-detail').classList.add('hidden');
+        }
+
+        function speakResults() {
+            const cropName = document.getElementById('detail-crop-name')?.textContent;
+            if (cropName && cropName !== 'Loading...') {
+                speak(`Here are the market details for ${cropName}.`);
+            } else {
+                speak('Please select a crop first to hear the results.');
+            }
+        }
+    </script>
+</body>
+
+</html>
